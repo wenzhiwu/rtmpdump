@@ -593,6 +593,8 @@ static struct urlopt {
   	"Session timeout in seconds" },
   { AVC("pubUser"),   OFF(Link.pubUser),       OPT_STR, 0,
         "Publisher username" },
+  { AVC("localaddr"), OFF(Link.localaddr),     OPT_STR, 0,
+  "Rtmp localaddr" },
   { AVC("pubPasswd"), OFF(Link.pubPasswd),     OPT_STR, 0,
         "Publisher password" },
   { {NULL,0}, 0, 0}
@@ -881,7 +883,6 @@ add_addr_info(struct sockaddr_in *service, AVal *host, int port)
     {
       hostname = host->av_val;
     }
-
   service->sin_addr.s_addr = inet_addr(hostname);
   if (service->sin_addr.s_addr == INADDR_NONE)
     {
@@ -909,8 +910,29 @@ RTMP_Connect0(RTMP *r, struct sockaddr * service)
   r->m_sb.sb_timedout = FALSE;
   r->m_pausing = 0;
   r->m_fDuration = 0.0;
+  struct sockaddr_in service_out;
 
   r->m_sb.sb_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+  if (r->Link.localaddr.av_val!= NULL && r->Link.localaddr.av_len!=0)
+  {
+      memset(&service_out, 0, sizeof(struct sockaddr_in));
+      if (add_addr_info(&service_out, &r->Link.localaddr, 0))
+      {
+          service_out.sin_family = PF_INET; // only for ipv4
+          if (bind(r->m_sb.sb_socket, &service_out, sizeof(struct sockaddr)) < 0)
+          {
+              int err = GetSockError();
+              RTMP_Log(RTMP_LOGERROR, "%s, failed to bind address. %d (%s)",
+                       __FUNCTION__, err, strerror(err));
+          }
+      }
+      else
+      {
+          RTMP_Log(RTMP_LOGERROR, "%s, add_addr_info failed",__FUNCTION__);
+      }
+  }
+
   if (r->m_sb.sb_socket != -1)
     {
       if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0)

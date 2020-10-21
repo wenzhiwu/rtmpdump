@@ -159,6 +159,7 @@ extern "C"
     AVal token;
     AVal pubUser;
     AVal pubPasswd;
+    AVal localaddr;
     AMFObject extras;
     int edepth;
 
