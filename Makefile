@@ -45,6 +45,7 @@ THREADLIB=$(THREADLIB_$(SYS))
 SLIBS=$(THREADLIB) $(LIBS)
 
 LIBRTMP=librtmp/librtmp.a
+LIBRTMPSTATIC=librtmp.a
 INCRTMP=librtmp/rtmp_sys.h librtmp/rtmp.h librtmp/log.h librtmp/amf.h
 
 EXT_posix=
@@ -57,6 +58,12 @@ PROGS=rtmpdump rtmpgw rtmpsrv rtmpsuck
 all:	$(LIBRTMP) $(PROGS)
 
 $(PROGS): $(LIBRTMP)
+
+install_base:	$(LIBRTMPSTATIC)
+	-mkdir -p $(BINDIR) $(SBINDIR) $(MANDIR)/man1 $(MANDIR)/man8
+	cp rtmpdump.1 $(MANDIR)/man1
+	cp rtmpgw.8 $(MANDIR)/man8
+	@cd librtmp; $(MAKE) install_base
 
 install:	$(PROGS)
 	-mkdir -p $(BINDIR) $(SBINDIR) $(MANDIR)/man1 $(MANDIR)/man8
@@ -71,6 +78,9 @@ clean:
 	@cd librtmp; $(MAKE) clean
 
 FORCE:
+
+$(LIBRTMPSTATIC): FORCE
+	@cd librtmp; $(MAKE) librtmp.a
 
 $(LIBRTMP): FORCE
 	@cd librtmp; $(MAKE) all
