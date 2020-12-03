@@ -271,16 +271,19 @@ void RTMP_ParsePlaypath(AVal *in, AVal *out) {
 			pplen -= 4;
 			continue;
 		}
-		if (*p == '%') {
-			unsigned int c;
-			sscanf(p+1, "%02x", &c);
-			*destptr++ = c;
-			pplen -= 3;
-			p += 3;
-		} else {
-			*destptr++ = *p++;
-			pplen--;
-		}
+		/* // 去掉decode转义字符逻辑，%3A -> :，%3D -> =
+                if (*p == '%') {
+                        unsigned int c;
+                        sscanf(p+1, "%02x", &c);
+                        *destptr++ = c;
+                        pplen -= 3;
+                        p += 3;
+                } else {
+                        *destptr++ = *p++;
+                        pplen--;
+                }*/
+                *destptr++ = *p++;
+                pplen--;
 	}
 	*destptr = '\0';
 
